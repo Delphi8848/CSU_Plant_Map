@@ -1,0 +1,40 @@
+[
+  {
+    "id": "52858f169df344f099b82afd6a78065b",
+    "name": "花",
+    "desc": "",
+    "lng": 112.928061,
+    "lat": 28.183802,
+    "campus_id": "yuelushan",
+    "campus_name": "岳麓山校区",
+    "image_url": "",
+    "image_filename": "",
+    "created_at": "2026-04-17 00:35:00"
+  },
+  {
+    "id": "6a4331fc95c14303887f08c5dc2d4b13",
+    "name": "日本鸢尾",
+    "desc": "",
+    "lng": 112.938967,
+    "lat": 28.158933,
+    "campus_id": "lunan",
+    "campus_name": "麓南校区",
+    "image_url": "/static/uploads/6c3eb8266de745f18f95fd993484d68f_d4646f7719c9259beade9a532e5f23fe.jpg",
+    "image_filename": "6c3eb8266de745f18f95fd993484d68f_d4646f7719c9259beade9a532e5f23fe.jpg",
+    "created_at": "2026-04-17 01:20:13"
+  },
+  {
+    "id": "3398e921b9b0435aaeda9a4eb2bc1bf5",
+    "name": "山茶花",
+    "desc": "",
+    "lng": 112.943907,
+    "lat": 28.220421,
+    "campus_id": "xinglin",
+    "campus_name": "杏林校区",
+    "category": "观花",
+    "recorder": "赵思源",
+    "image_url": "/static/uploads/4c7c0deece294af3924d306dab66fe8b_cd1443563bc2e3ec14c3973761d0172d.jpg",
+    "image_filename": "4c7c0deece294af3924d306dab66fe8b_cd1443563bc2e3ec14c3973761d0172d.jpg",
+    "created_at": "2026-04-17 16:13:51"
+  }
+]

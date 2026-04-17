@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>中南大学校园植物地图</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: #f5f7fb;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 9999;
+      background: rgba(255,255,255,0.96);
+      border-radius: 14px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.12);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      max-width: calc(100vw - 28px);
+    }
+
+    .toolbar button {
+      border: none;
+      background: #1677ff;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .toolbar .title {
+      font-weight: 700;
+      color: #1f2937;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .tips {
+      position: fixed;
+      right: 14px;
+      top: 14px;
+      z-index: 9999;
+      background: rgba(255,255,255,0.96);
+      border-radius: 14px;
+      box-shadow: 0 8px 26px rgba(0,0,0,0.12);
+      padding: 12px 14px;
+      width: 300px;
+      line-height: 1.5;
+      color: #374151;
+      font-size: 13px;
+    }
+
+    .form-panel {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 9999;
+      width: 340px;
+      max-height: 82vh;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.98);
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.16);
+      padding: 16px;
+      display: none;
+    }
+
+    .form-panel h3 {
+      margin: 0 0 12px 0;
+      font-size: 18px;
+      color: #111827;
+    }
+
+    .form-panel .row {
+      margin-bottom: 10px;
+    }
+
+    .form-panel label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 5px;
+      color: #4b5563;
+    }
+
+    .form-panel input[type="text"],
+    .form-panel textarea,
+    .form-panel input[type="file"],
+    .form-panel select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .form-panel textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .form-actions button {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .primary-btn {
+      background: #16a34a;
+      color: #fff;
+    }
+
+    .ghost-btn {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .thumb-marker {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+      background: #f3f4f6;
+    }
+
+    .thumb-marker img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .category-badge {
+      display: inline-block;
+      font-size: 12px;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+
+    .badge-tree {
+      background: #15803d;
+    }
+
+    .badge-flower {
+      background: #db2777;
+    }
+
+    .info-card {
+      width: 250px;
+      line-height: 1.5;
+      color: #111827;
+    }
+
+    .info-card h4 {
+      margin: 0 0 8px 0;
+      font-size: 17px;
+    }
+
+    .info-card .meta {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .info-card img {
+      width: 100%;
+      max-height: 160px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 8px;
+      display: block;
+    }
+
+    .danger-btn {
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: #dc2626;
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .toolbar {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        padding: 10px;
+        gap: 8px;
+      }
+
+      .toolbar .title {
+        min-width: 120px;
+        flex: 1;
+      }
+
+      .toolbar button {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      .tips {
+        left: 10px;
+        right: 10px;
+        top: auto;
+        bottom: 10px;
+        width: auto;
+        font-size: 12px;
+        padding: 10px 12px;
+      }
+
+      .form-panel {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        width: auto;
+        max-height: 72vh;
+      }
+    }
+  </style>
+
+  <script>
+    window._AMapSecurityConfig = {
+      securityJsCode: "18a50c926b5f719851000643d40c72ff"
+    };
+  </script>
+  <script src="https://webapi.amap.com/maps?v=2.0&key=8559cb2ffc05695d02c24f4d3c13b3f5&plugin=AMap.PlaceSearch"></script>
+</head>
+<body>
+  <div class="toolbar">
+    <button id="prevBtn">上一页</button>
+    <div class="title" id="campusTitle">加载中</div>
+    <button id="nextBtn">下一页</button>
+  </div>
+
+  <div class="tips">
+    <div><strong>操作说明</strong></div>
+    <div>1. 点击“上一页 / 下一页”切换校区</div>
+    <div>2. 地图只显示当前校区区域</div>
+    <div>3. 点击校区内部位置新增植物</div>
+    <div>4. 可选择“古树 / 观花”并记录标注者</div>
+    <div>5. 手机上也可直接打开并标注</div>
+  </div>
+
+  <div id="map"></div>
+
+  <div class="form-panel" id="formPanel">
+    <h3>新增植物标注</h3>
+
+    <div class="row">
+      <label>植物名称</label>
+      <input type="text" id="plantName" placeholder="例如：樱花" />
+    </div>
+
+    <div class="row">
+      <label>类别</label>
+      <select id="plantCategory">
+        <option value="">请选择类别</option>
+        <option value="古树">古树</option>
+        <option value="观花">观花</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>标注者</label>
+      <input type="text" id="plantRecorder" placeholder="请输入姓名或昵称" />
+    </div>
+
+    <div class="row">
+      <label>备注</label>
+      <textarea id="plantDesc" placeholder="例如：花期、位置说明、特征"></textarea>
+    </div>
+
+    <div class="row">
+      <label>图片</label>
+      <input type="file" id="plantImage" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" />
+    </div>
+
+    <div class="row">
+      <label>点击坐标</label>
+      <input type="text" id="plantLngLat" readonly />
+    </div>
+
+    <div class="form-actions">
+      <button class="primary-btn" id="submitBtn">保存</button>
+      <button class="ghost-btn" id="cancelBtn">取消</button>
+    </div>
+  </div>
+
+  <script>
+    const CAMPUSES = [
+      {
+        id: "yuelushan",
+        name: "岳麓山校区",
+        searchKeyword: "中南大学岳麓山校区",
+        fallbackCenter: [112.9278, 28.1833],
+        zoom: 17.2,
+        maskPaths: [
+          [
+            [112.925954, 28.175217], [112.92764, 28.175439], [112.928016, 28.175318],
+            [112.928338, 28.174967], [112.928207, 28.174426], [112.928966, 28.174453],
+            [112.92925, 28.175007], [112.930315, 28.175298], [112.930476, 28.174926],
+            [112.929901, 28.174223], [112.929894, 28.173034], [112.930537, 28.17298],
+            [112.930622, 28.172859], [112.931511, 28.172865], [112.931564, 28.172696],
+            [112.932407, 28.17271], [112.932553, 28.172595], [112.933059, 28.169744],
+            [112.933511, 28.169724], [112.933841, 28.169102], [112.934423, 28.169413],
+            [112.935118, 28.169367], [112.935204, 28.166809], [112.934523, 28.165375],
+            [112.933767, 28.164192], [112.931932, 28.163883], [112.930836, 28.165825],
+            [112.929626, 28.165925], [112.92943, 28.166377], [112.92777, 28.166167],
+            [112.926791, 28.166513], [112.926368, 28.167087], [112.926064, 28.169799],
+            [112.922645, 28.169679], [112.923316, 28.170933], [112.922389, 28.171461],
+            [112.922317, 28.172398]
+          ]
+        ]
+      },
+      {
+        id: "lunan",
+        name: "麓南校区",
+        searchKeyword: "中南大学麓南校区",
+        fallbackCenter: [112.9342, 28.1775],
+        zoom: 17.2,
+        maskPaths: [
+          [
+            [112.935246, 28.161712], [112.934508, 28.162097], [112.932658, 28.161969],
+            [112.93298, 28.159614], [112.933833, 28.158148], [112.937668, 28.15506],
+            [112.938209, 28.155435], [112.939549, 28.160182], [112.939237, 28.161144],
+            [112.939903, 28.161236], [112.940027, 28.161923], [112.939061, 28.161941],
+            [112.939102, 28.163087], [112.939092, 28.163554], [112.938375, 28.164471],
+            [112.93799, 28.164495], [112.937855, 28.165182], [112.936473, 28.164972]
+          ]
+        ]
+      },
+      {
+        id: "xiaoxiang",
+        name: "潇湘校区",
+        searchKeyword: "中南大学潇湘校区",
+        fallbackCenter: [112.9349, 28.1648],
+        zoom: 16.8,
+        maskPaths: [
+          [
+            [112.93747, 28.151421], [112.944515, 28.150979], [112.95131, 28.151798],
+            [112.951295, 28.149459], [112.94761, 28.149329], [112.947934, 28.145755],
+            [112.938826, 28.146041], [112.938059, 28.147055], [112.934316, 28.147341],
+            [112.933269, 28.150485], [112.932031, 28.150563], [112.930793, 28.157997],
+            [112.931338, 28.158919], [112.931029, 28.162636], [112.932473, 28.162389],
+            [112.934846, 28.157386], [112.937824, 28.154995]
+          ]
+        ]
+      },
+      {
+        id: "xinglin",
+        name: "杏林校区",
+        searchKeyword: "中南大学杏林校区",
+        fallbackCenter: [112.9950, 28.1930],
+        zoom: 17.0,
+        maskPaths: [
+          [
+            [112.942502, 28.222136], [112.942477, 28.220911], [112.941733, 28.220868],
+            [112.941303, 28.221263], [112.941032, 28.221296], [112.940995, 28.222163],
+            [112.939125, 28.222087], [112.939101, 28.220711], [112.939943, 28.220147],
+            [112.940122, 28.220158], [112.939863, 28.218928], [112.939783, 28.218917],
+            [112.939802, 28.218565], [112.939642, 28.218483], [112.939513, 28.218456],
+            [112.939494, 28.218104], [112.940275, 28.218164], [112.940319, 28.218034],
+            [112.942735, 28.218223], [112.944033, 28.218391], [112.944027, 28.220656],
+            [112.943861, 28.22083]
+          ]
+        ]
+      },
+      {
+        id: "tianxin",
+        name: "天心校区",
+        searchKeyword: "中南大学天心校区",
+        fallbackCenter: [112.9895, 28.1125],
+        zoom: 17.0,
+        maskPaths: [
+          [
+            [112.989432, 28.138719], [112.987279, 28.138686], [112.986961, 28.141764],
+            [112.988664, 28.142334], [112.989862, 28.141509], [112.990077, 28.141566],
+            [112.99018, 28.14207], [112.991116, 28.14202], [112.991519, 28.142326],
+            [112.992211, 28.142301], [112.992847, 28.143274], [112.993521, 28.143844],
+            [112.994129, 28.144009], [112.994317, 28.143596], [112.995393, 28.141806],
+            [112.995468, 28.141591], [112.995543, 28.141145], [112.995056, 28.140296],
+            [112.994859, 28.138356], [112.995178, 28.137564], [112.994317, 28.136549],
+            [112.994382, 28.136136], [112.991855, 28.134692], [112.990246, 28.13607],
+            [112.989759, 28.137011]
+          ]
+        ]
+      }
+    ];
+
+    let currentCampusIndex = 0;
+    let currentBoundaryPolygons = [];
+    let currentMarkers = [];
+    let currentClickLngLat = null;
+    let map = null;
+    let placeSearch = null;
+    let infoWindow = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    function initMap() {
+      map = new AMap.Map("map", {
+        viewMode: "3D",
+        center: CAMPUSES[0].fallbackCenter,
+        zoom: CAMPUSES[0].zoom,
+        zooms: [3, 20],
+        pitch: 0,
+        showBuildingBlock: true,
+        resizeEnable: true,
+        dragEnable: true,
+        zoomEnable: true,
+        touchZoom: true,
+        doubleClickZoom: true
+      });
+
+      infoWindow = new AMap.InfoWindow({
+        offset: new AMap.Pixel(0, -10)
+      });
+
+      placeSearch = new AMap.PlaceSearch({
+        city: "长沙",
+        citylimit: true,
+        pageSize: 1,
+        pageIndex: 1,
+        extensions: "base"
+      });
+
+      map.on("click", onMapClick);
+
+      $("prevBtn").addEventListener("click", () => switchCampus(-1));
+      $("nextBtn").addEventListener("click", () => switchCampus(1));
+      $("cancelBtn").addEventListener("click", closeForm);
+      $("submitBtn").addEventListener("click", submitPlant);
+
+      activateCampus(currentCampusIndex);
+    }
+
+    function switchCampus(step) {
+      currentCampusIndex = (currentCampusIndex + step + CAMPUSES.length) % CAMPUSES.length;
+      activateCampus(currentCampusIndex);
+    }
+
+    function getCampusBounds(paths) {
+      const all = [];
+      paths.forEach(poly => poly.forEach(p => all.push(p)));
+      const lngs = all.map(p => p[0]);
+      const lats = all.map(p => p[1]);
+
+      return new AMap.Bounds(
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)]
+      );
+    }
+
+    function clearCampusOverlays() {
+      currentBoundaryPolygons.forEach(x => map.remove(x));
+      currentBoundaryPolygons = [];
+      currentMarkers.forEach(x => map.remove(x));
+      currentMarkers = [];
+      infoWindow.close();
+    }
+
+    function drawCampusBoundary(campus) {
+      campus.maskPaths.forEach(path => {
+        const poly = new AMap.Polygon({
+          path,
+          strokeColor: "#14532d",
+          strokeWeight: 3,
+          fillColor: "#22c55e",
+          fillOpacity: 0.08,
+          bubble: true
+        });
+        currentBoundaryPolygons.push(poly);
+        map.add(poly);
+      });
+    }
+
+    function locateCampusCenterBySearch(campus) {
+      return new Promise((resolve) => {
+        placeSearch.search(campus.searchKeyword, (status, result) => {
+          if (
+            status === "complete" &&
+            result &&
+            result.poiList &&
+            result.poiList.pois &&
+            result.poiList.pois.length > 0 &&
+            result.poiList.pois[0].location
+          ) {
+            const loc = result.poiList.pois[0].location;
+            resolve([loc.lng, loc.lat]);
+            return;
+          }
+          resolve(campus.fallbackCenter);
+        });
+      });
+    }
+
+    async function activateCampus(index) {
+      const campus = CAMPUSES[index];
+      $("campusTitle").innerText = campus.name;
+
+      closeForm();
+      clearCampusOverlays();
+
+      map.setMask(campus.maskPaths);
+      drawCampusBoundary(campus);
+
+      const bounds = getCampusBounds(campus.maskPaths);
+      map.setLimitBounds(bounds);
+      map.setZooms([3, 20]);
+
+      const center = await locateCampusCenterBySearch(campus);
+      map.setZoomAndCenter(campus.zoom, center);
+      map.setFitView(currentBoundaryPolygons, false, [50, 50, 50, 50]);
+
+      await loadPlantsForCampus(campus.id);
+    }
+
+    async function loadPlantsForCampus(campusId) {
+      const resp = await fetch(`/api/plants?campus_id=${encodeURIComponent(campusId)}`);
+      const plants = await resp.json();
+      plants.forEach(item => addPlantMarker(item));
+    }
+
+    function getCategoryBadge(category) {
+      if (category === "古树") {
+        return `<span class="category-badge badge-tree">古树</span>`;
+      }
+      if (category === "观花") {
+        return `<span class="category-badge badge-flower">观花</span>`;
+      }
+      return "";
+    }
+
+    function addPlantMarker(item) {
+      let marker;
+
+      if (item.image_url) {
+        marker = new AMap.Marker({
+          position: [item.lng, item.lat],
+          offset: new AMap.Pixel(-21, -21),
+          content: `
+            <div class="thumb-marker">
+              <img src="${item.image_url}" alt="${escapeHtml(item.name)}" />
+            </div>
+          `
+        });
+      } else {
+        marker = new AMap.Marker({
+          position: [item.lng, item.lat]
+        });
+      }
+
+      marker.on("click", () => openPlantInfo(item, marker));
+      map.add(marker);
+      currentMarkers.push(marker);
+    }
+
+    function openPlantInfo(item, marker) {
+      const html = `
+        <div class="info-card">
+          ${getCategoryBadge(item.category || "")}
+          <h4>${escapeHtml(item.name)}</h4>
+          <div>${escapeHtml(item.desc || "")}</div>
+          ${item.image_url ? `<img src="${item.image_url}" alt="${escapeHtml(item.name)}" />` : ""}
+          <div class="meta">类别：${escapeHtml(item.category || "")}</div>
+          <div class="meta">标注者：${escapeHtml(item.recorder || "")}</div>
+          <div class="meta">校区：${escapeHtml(item.campus_name)}</div>
+          <div class="meta">创建时间：${escapeHtml(item.created_at)}</div>
+          <button class="danger-btn" onclick="window.deletePlant('${item.id}')">删除</button>
+        </div>
+      `;
+      infoWindow.setContent(html);
+      infoWindow.open(map, marker.getPosition());
+    }
+
+    function onMapClick(e) {
+      const lnglat = e.lnglat;
+
+      if (!currentBoundaryPolygons.length) {
+        alert("当前校区边界未加载完成，请稍后再试。");
+        return;
+      }
+
+      const inside = currentBoundaryPolygons.some(poly => {
+        try {
+          return poly.contains(lnglat);
+        } catch (err) {
+          console.error("contains 判断失败：", err);
+          return false;
+        }
+      });
+
+      if (!inside) {
+        alert("请点击当前校区范围内的位置。");
+        return;
+      }
+
+      currentClickLngLat = lnglat;
+      $("plantLngLat").value = `${lnglat.getLng().toFixed(6)}, ${lnglat.getLat().toFixed(6)}`;
+      $("formPanel").style.display = "block";
+    }
+
+    function closeForm() {
+      $("formPanel").style.display = "none";
+      $("plantName").value = "";
+      $("plantCategory").value = "";
+      $("plantRecorder").value = "";
+      $("plantDesc").value = "";
+      $("plantImage").value = "";
+      $("plantLngLat").value = "";
+      currentClickLngLat = null;
+    }
+
+    async function submitPlant() {
+      try {
+        if (!currentClickLngLat) {
+          alert("请先点击当前校区内部位置。");
+          return;
+        }
+
+        const name = $("plantName").value.trim();
+        const category = $("plantCategory").value;
+        const recorder = $("plantRecorder").value.trim();
+
+        if (!name) {
+          alert("请填写植物名称。");
+          return;
+        }
+        if (!category) {
+          alert("请选择类别。");
+          return;
+        }
+        if (!recorder) {
+          alert("请填写标注者。");
+          return;
+        }
+
+        const campus = CAMPUSES[currentCampusIndex];
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("category", category);
+        formData.append("recorder", recorder);
+        formData.append("desc", $("plantDesc").value.trim());
+        formData.append("lng", String(currentClickLngLat.getLng()));
+        formData.append("lat", String(currentClickLngLat.getLat()));
+        formData.append("campus_id", campus.id);
+        formData.append("campus_name", campus.name);
+
+        const file = $("plantImage").files[0];
+        if (file) {
+          formData.append("image", file);
+        }
+
+        $("submitBtn").disabled = true;
+        $("submitBtn").innerText = "保存中...";
+
+        const resp = await fetch("/api/plants", {
+          method: "POST",
+          body: formData
+        });
+
+        const text = await resp.text();
+        let result = {};
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          console.error("返回不是JSON：", text);
+          alert("后端返回异常，请按 F12 查看控制台。");
+          return;
+        }
+
+        if (!resp.ok || !result.ok) {
+          console.error("保存失败：", result);
+          alert(result.msg || "保存失败");
+          return;
+        }
+
+        addPlantMarker(result.item);
+        closeForm();
+        alert("保存成功");
+      } catch (err) {
+        console.error("submitPlant 出错：", err);
+        alert("保存时发生错误，请按 F12 查看控制台。");
+      } finally {
+        $("submitBtn").disabled = false;
+        $("submitBtn").innerText = "保存";
+      }
+    }
+
+    window.deletePlant = async function (id) {
+      const ok = confirm("确定删除这个植物标注吗？");
+      if (!ok) return;
+
+      const resp = await fetch(`/api/plants/${id}`, {
+        method: "DELETE"
+      });
+      const result = await resp.json();
+
+      if (!resp.ok || !result.ok) {
+        alert(result.msg || "删除失败");
+        return;
+      }
+
+      activateCampus(currentCampusIndex);
+    };
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    initMap();
+  </script>
+</body>
+</html>
